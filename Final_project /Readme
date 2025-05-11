@@ -1,5 +1,6 @@
 What does the folder contain?
-This final project includes an R script, an R Markdown (RMD) file, and an HTML file. Additionally, it contains a folder with the data used in these files, as well as all the figures.
+This final project includes an R script, an R Markdown (RMD) file, and an HTML file.
+It also contains a folder with the data used in the above files, as well as all the figures.
 
 The aim of the project:
 I) This project explores witch trials in Denmark during the 15th and 16th centuries. It examines how these trials changed over time, especially in relation to the 1617 law on witchcraft. 
