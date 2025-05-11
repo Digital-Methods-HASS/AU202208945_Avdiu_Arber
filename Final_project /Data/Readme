@@ -1,1 +1,5 @@
+In this folder you will find two types of data.
 
+The first data ("Witchcraft_dataset.csv") contains information about the development of the witchcraft cases, the gender distribution among the accused and the accuser etc.
+
+The second data ("Capturing_Coordinates.csv") contains coordinates for the cities/parishes where the witchcraft cases took place, and has been used to produce the interactive maps.
