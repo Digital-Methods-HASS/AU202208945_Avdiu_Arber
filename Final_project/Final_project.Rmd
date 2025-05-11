@@ -1,0 +1,240 @@
+
+```{r}
+#Topic: "The Danish Witch Trials of the 15th and 16th Centuries"
+
+
+# 1st parameter: We will investigate the effect of the 1617 law that banned both black and white magic in Denmark, and examine how this legislation influenced the rise of witch trials.
+
+# Packages
+library(ggplot2)
+library(dplyr)
+```
+
+
+```{r}
+#Downloading my dataset
+data <- read.csv("Witchcraft_dataset.csv")
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+# Count the number of cases per year
+danish_cases <- data %>%
+  filter(År_dømt >= 1500 & År_dømt <= 1700) %>%
+  group_by(År_dømt) %>%
+  summarise(antal_sager = n())
+```
+
+
+```{r}
+# Visualization: The development of Witch Trials in Denmark
+ggplot(danish_cases, aes(x = År_dømt, y = antal_sager)) +
+  geom_line(color = "darkblue", size = 1.5) +  
+  labs(
+    title = "Development of Witchcraft Trials in Denmark",
+    x =  "Year of Conviction",
+    y = "Number of Witchcraft cases"
+  ) +
+  scale_y_continuous(limits = c(0, 100)) +
+  scale_x_continuous(breaks = seq(1500, 1700, 10)) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.background = element_rect(fill = "#f0f4ff", color = NA),
+    panel.background = element_rect(fill = "#e0ecf8", color = NA),
+    plot.title = element_text(face = "bold", size = 16),
+    axis.title = element_text(size = 13),
+    axis.text = element_text(size = 12)
+  )
+```
+
+```{r}
+# Visualize the development with a dashed line at 1617:
+
+ggplot(danish_cases, aes(x = År_dømt, y = antal_sager)) +
+  geom_line(color = "darkblue", size = 1.5) +
+  geom_vline(xintercept = 1617, linetype = "dashed", color = "red", size = 1) + 
+  labs(
+    title = "Development of Witchcraft Trials in Denmark",
+    subtitle = "Dashed line marks the legal change in 1617",
+    x = "Year of Conviction",
+    y = "Number of Witchcraft Cases"
+  ) +
+  scale_y_continuous(limits = c(0, 100)) +
+  scale_x_continuous(breaks = seq(1500, 1700, 10)) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.background = element_rect(fill = "#f0f4ff", color = NA),
+    panel.background = element_rect(fill = "#e0ecf8", color = NA),
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(face = "italic", size = 13),
+    axis.title = element_text(size = 13),
+    axis.text = element_text(size = 12)
+  )
+```
+
+```{r}
+# Skills: Interactive Maps in R
+
+#2nd parameter: We look at where witch trials happened in Denmark. We also want to examine the connection between local cases and higher courts ("Viborg Landsting"): Which cases from which parishes/cities ended up in Viborg Landsting? What can the results tell us about the legal system of the time? 
+
+library(leaflet)
+```
+
+```{r}
+# Coordinates for Viborg Landsting
+viborg_lat <- 56.4501933
+viborg_lng <- 9.4295959
+```
+
+```{r}
+# Creates a map that focuses on "Viborg Landsting"
+leaflet() %>% 
+  addTiles() %>% 
+  addMarkers(lng = viborg_lng, 
+             lat = viborg_lat, 
+             popup = "Viborg Landsting") %>% 
+  setView(lng = viborg_lng, lat = viborg_lat, zoom = 7)
+```
+
+```{r}
+library(tidyverse)
+library(leaflet)
+```
+
+```{r}
+#Load the CSV file with the coordinates of the cities 
+cities <- read.csv("Capturing_Coordinates.csv")
+```
+
+```{r}
+# Checking the structure of the data to make sure the columns are correct
+glimpse(cities)
+```
+
+```{r}
+# Create the map with the data from the CSV file
+leaflet(cities) %>% 
+  addTiles() %>% 
+  addMarkers(lng = cities$Longitude, 
+             lat = cities$Latitude, 
+             popup = cities$Stednavn, 
+             clusterOptions = markerClusterOptions()) %>%
+  setView(lng = mean(cities$Longitude), lat = mean(cities$Latitude), zoom = 7)
+
+#Explanation of why less than half of the city coordinates are included? In the Witchcraft_dataset.csv, there are a total of 484 witchcraft cases involving various locations. However, only about half of the city coordinates (232) are included in the Capturing_Coordinates.csv file. This can be explained by three main factors:
+  
+# 1. Some city names appear multiple times in the dataset but are only included once in the coordinates file.
+
+# 2. Many of the parishes or towns are outdated due to the historical period, and they could not be located by Google Maps.
+
+# 3. In the available material from the Viborg court records, the location is often missing and marked as NA (missing data).
+
+```
+
+```{r}
+# Top 15 cities with the most Witchcraft Accusations and Cases:
+
+library(tidyverse)
+```
+
+```{r}
+# Load the dataset
+witchcraft_data <- read.csv("Witchcraft_dataset.csv")
+```
+
+```{r}
+# Inspect the data to make sure the column name is correct
+glimpse(witchcraft_data)
+
+```
+
+```{r}
+# Count the occurrences of each city in the "Bopæl" column, removing NA values, and get the top 15 cities
+top_cities <- witchcraft_data %>%
+  filter(!is.na(Bopæl)) %>%   
+  count(Bopæl, sort = TRUE) %>%
+  top_n(15, n)
+```
+
+```{r}
+# View the Top 15 cities with the most Witchcraft Accusations and Cases in Denmark: We are interested in identifying the cities (referred to as "Bopæl" in the dataset, meaning "location") where Witchcraft Accusations and Persecutions occurred most frequently. By examining the occurrences of different cities in this column, we can generate a Top 15 list of cities with the highest frequency of Witchcraft-related incidents. 
+
+# Creating a bar chart of the top 15 cities:
+ggplot(top_cities, aes(x = reorder(Bopæl, n), y = n)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(title = "Top 15 Cities with the Most Witchcraft Accusations and Cases",
+       x = "City",
+       y = "Number of Cases") +
+  theme_minimal() +
+  coord_flip()  
+
+```
+
+```{r}
+#3rd parameter: Gender played a central role in the witch trials. This study specifically focuses on Denmark to explain the gender distribution among the convicted and the prosecutor in witchcraft cases, as well as the marital status (married, unmarried, widowed, etc.) of these individuals.
+
+
+library(tidyverse)
+```
+
+```{r}
+# Load the dataset
+data <- read.csv("Witchcraft_dataset.csv")
+
+```
+
+```{r}
+# Remove "Flere" from Køn_Anklager and NA values from both Køn_Sigted and Køn_Anklager
+data_cleaned <- data %>%
+  filter(!is.na(Køn_Sigted) & !is.na(Køn_Anklager) & 
+           Køn_Anklager != "Flere" & Køn_Sigted != "Flere")
+```
+
+```{r}
+gender_distribution <- data_cleaned %>%
+  gather(key = "Role", value = "Gender", Køn_Sigted, Køn_Anklager) %>%
+  ggplot(aes(x = Gender, fill = Role)) +
+  geom_bar(position = "dodge") +
+  scale_fill_manual(values = c("blue", "pink")) +
+  labs(title = "Gender Distribution among the Convicted and Prosecutors", 
+       x = "Gender", 
+       y = "Number of individuals",
+       fill = "Role") +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+```{r}
+# Display the plot
+print(gender_distribution)
+```
+
+```{r}
+# Overview of the marital status of the convicted
+
+library(tidyverse)
+```
+
+```{r}
+# Load the dataset
+data <- read.csv("Witchcraft_dataset.csv")
+```
+
+```{r}
+# Remove NA values
+civil_data <- data %>%
+  select(Civilstand) %>%
+  filter(!is.na(Civilstand))
+```
+
+```{r}
+# Plotting marital status distribution
+ggplot(civil_data, aes(x = Civilstand, fill = Civilstand)) +
+  geom_bar() +
+  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5) +
+  labs(title = "Marital Status of Convicted",
+       x = "Marital Status",
+       y = "Number of Individuals") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
